@@ -1,25 +1,35 @@
-from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, to_date, datediff
+import os
 
-# Create Spark session
-spark = SparkSession.builder.appName("SupplyChainETL").getOrCreate()
+# === Simulated "environment variables" ===
+RAW_PATH = "/FileStore/tables"
+CURATED_PATH = "/FileStore/curated"
 
-# Load raw data (assumes mounted Blob or local CSVs for demo)
-orders = spark.read.option("header", True).csv("/dbfs/FileStore/raw/orders.csv")
-inventory = spark.read.option("header", True).csv("/dbfs/FileStore/raw/inventory.csv")
-shipments = spark.read.option("header", True).csv("/dbfs/FileStore/raw/shipments.csv")
+ORDERS_PATH = os.path.join(RAW_PATH, "orders.csv")
+INVENTORY_PATH = os.path.join(RAW_PATH, "inventory.csv")
+SHIPMENTS_PATH = os.path.join(RAW_PATH, "shipments.csv")
 
-# Parse dates
+ORDERS_OUT = os.path.join(CURATED_PATH, "orders_shipments")
+INVENTORY_OUT = os.path.join(CURATED_PATH, "inventory")
+
+# === Load CSVs from FileStore ===
+orders = spark.read.option("header", True).csv(ORDERS_PATH)
+inventory = spark.read.option("header", True).csv(INVENTORY_PATH)
+shipments = spark.read.option("header", True).csv(SHIPMENTS_PATH)
+
+# === Parse dates ===
 orders = orders.withColumn("order_date", to_date(col("order_date")))
 shipments = shipments.withColumn("expected_delivery", to_date(col("expected_delivery")))
 shipments = shipments.withColumn("actual_delivery", to_date(col("actual_delivery")))
 
-# Calculate delay days
+# === Calculate delay days ===
 shipments = shipments.withColumn("delay_days", datediff("actual_delivery", "expected_delivery"))
 
-# Join orders with shipment info
+# === Join orders with shipments ===
 order_shipments = orders.join(shipments, on="order_id", how="left")
 
-# Write output to a curated zone (Parquet format for now)
-order_shipments.write.mode("overwrite").parquet("/dbfs/FileStore/curated/orders_shipments/")
-inventory.write.mode("overwrite").parquet("/dbfs/FileStore/curated/inventory/")
+# === Write cleaned data to curated layer ===
+order_shipments.write.mode("overwrite").parquet(ORDERS_OUT)
+inventory.write.mode("overwrite").parquet(INVENTORY_OUT)
+
+print("✅ ETL pipeline completed successfully.")
