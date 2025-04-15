@@ -1,42 +1,60 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import matplotlib.pyplot as plt
 
-# Page setup
+# --- Page Config ---
 st.set_page_config(page_title="Supply Chain Dashboard", layout="wide")
-st.title("📦 Supply Chain Analytics Dashboard")
 
-# Load data
+# --- Load Data ---
 @st.cache_data
 def load_data():
-    orders = pd.read_csv("data/raw/orders.csv", parse_dates=["order_date"])
-    inventory = pd.read_csv("data/raw/inventory.csv")
-    shipments = pd.read_csv("data/raw/shipments.csv", parse_dates=["expected_delivery", "actual_delivery"])
-    return orders, inventory, shipments
+    orders_shipments = pd.read_csv("data/curated/orders_shipments.csv", parse_dates=["order_date", "expected_delivery", "actual_delivery"])
+    inventory = pd.read_csv("data/curated/inventory.csv")
+    return orders_shipments, inventory
 
-orders, inventory, shipments = load_data()
+orders_shipments, inventory = load_data()
 
-# Inventory Section
-st.header("📦 Inventory Levels")
-low_stock = inventory[inventory["quantity"] < 50]
-fig_inventory = px.bar(inventory, x="product_name", y="quantity", color="warehouse",
-                       title="Inventory by Product")
-st.plotly_chart(fig_inventory, use_container_width=True)
+# --- Header ---
+st.title("📦 Supply Chain Analytics Dashboard")
+st.markdown("Track shipments, delays, and inventory across your supply chain")
 
-if not low_stock.empty:
-    st.warning("⚠️ Low stock detected:")
-    st.dataframe(low_stock)
+# --- KPIs ---
+col1, col2, col3 = st.columns(3)
 
-# Shipment Delays Section
-st.header("🚚 Shipment Delays")
-shipments["delay_days"] = (shipments["actual_delivery"] - shipments["expected_delivery"]).dt.days
-delayed = shipments[shipments["delay_days"] > 0]
+with col1:
+    st.metric("Total Orders", len(orders_shipments["order_id"].unique()))
 
-fig_delays = px.histogram(delayed, x="delay_days", nbins=10, title="Shipment Delay Distribution")
-st.plotly_chart(fig_delays, use_container_width=True)
+with col2:
+    st.metric("Total Shipments", orders_shipments["shipment_id"].nunique())
 
-# Order Trends Section
-st.header("📈 Order Volume Over Time")
-orders_daily = orders.groupby(orders["order_date"].dt.date).size().reset_index(name="orders")
-fig_orders = px.line(orders_daily, x="order_date", y="orders", title="Orders per Day")
-st.plotly_chart(fig_orders, use_container_width=True)
+with col3:
+    delayed = orders_shipments["delay_days"].dropna()
+    st.metric("Avg Delay (days)", round(delayed.mean(), 2))
+
+st.markdown("---")
+
+# --- Delay Distribution ---
+st.subheader("📊 Shipment Delay Distribution")
+
+fig1, ax1 = plt.subplots()
+ax1.hist(orders_shipments["delay_days"].dropna(), bins=20, color="orange")
+ax1.set_xlabel("Delay Days")
+ax1.set_ylabel("Number of Shipments")
+st.pyplot(fig1)
+
+# --- Inventory Overview ---
+st.subheader("🏬 Inventory by Warehouse")
+
+fig2, ax2 = plt.subplots()
+warehouse_summary = inventory.groupby("warehouse")["quantity"].sum()
+warehouse_summary.plot(kind="bar", ax=ax2)
+ax2.set_ylabel("Quantity")
+ax2.set_xlabel("Warehouse")
+st.pyplot(fig2)
+
+# --- Raw Data Preview ---
+with st.expander("🗃️ View Raw Data"):
+    st.write("Orders & Shipments")
+    st.dataframe(orders_shipments.head(50))
+    st.write("Inventory")
+    st.dataframe(inventory.head(50))
