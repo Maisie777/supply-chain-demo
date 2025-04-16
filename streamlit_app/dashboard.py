@@ -5,15 +5,26 @@ import matplotlib.pyplot as plt
 # --- Page Config ---
 st.set_page_config(page_title="Supply Chain Dashboard", layout="wide")
 
-# --- Load Data ---
 @st.cache_data
 def load_data():
-    # ⬅️ Replace local file paths with public/SAS Azure Blob URLs
-    orders_url = "https://supplychain12.blob.core.windows.net/exports/orders_shipments/part-00000-abc.csv"
-    inventory_url = "https://supplychain12.blob.core.windows.net/exports/inventory/part-00000-def.csv"
+    try:
+        # ✅ Primary: Load from Azure Blob
+        orders_url = "https://supplychain12.blob.core.windows.net/exports/orders_shipments/part-00000.csv"
+        inventory_url = "https://supplychain12.blob.core.windows.net/exports/inventory/part-00000.csv"
 
-    orders_shipments = pd.read_csv(orders_url, parse_dates=["order_date", "expected_delivery", "actual_delivery"])
-    inventory = pd.read_csv(inventory_url)
+        orders_shipments = pd.read_csv(
+            orders_url, parse_dates=["order_date", "expected_delivery", "actual_delivery"]
+        )
+        inventory = pd.read_csv(inventory_url)
+        st.success("✅ Loaded data from Azure Blob Storage")
+    except Exception as e:
+        # 🔁 Fallback: Load from local files
+        st.warning(f"⚠️ Azure Blob read failed. Loading local files... ({e})")
+        orders_shipments = pd.read_csv(
+            "data/curated/orders_shipments.csv", parse_dates=["order_date", "expected_delivery", "actual_delivery"]
+        )
+        inventory = pd.read_csv("data/curated/inventory.csv")
+        st.success("✅ Loaded data from local fallback")
 
     return orders_shipments, inventory
 
