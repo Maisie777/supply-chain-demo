@@ -58,3 +58,5 @@ with st.expander("🗃️ View Raw Data"):
     st.dataframe(orders_shipments.head(50))
     st.write("Inventory")
     st.dataframe(inventory.head(50))
+
+fig1.savefig("shipment_delay_histogram.png")
