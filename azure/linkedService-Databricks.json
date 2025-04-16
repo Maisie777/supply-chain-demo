@@ -1,0 +1,11 @@
+{
+  "name": "AzureDatabricksLinkedService",
+  "properties": {
+    "type": "AzureDatabricks",
+    "typeProperties": {
+      "domain": "https://<your-databricks-workspace-url>",
+      "accessToken": "<your-databricks-personal-access-token>",
+      "existingClusterId": "<your-cluster-id>"
+    }
+  }
+}

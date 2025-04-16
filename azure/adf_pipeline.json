@@ -1,0 +1,31 @@
+{
+  "name": "RunDatabricksETL",
+  "properties": {
+    "activities": [
+      {
+        "name": "Run Databricks Notebook",
+        "type": "DatabricksNotebook",
+        "dependsOn": [],
+        "policy": {
+          "timeout": "7.00:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "userProperties": [],
+        "typeProperties": {
+          "notebookPath": "/Shared/etl_pipeline",
+          "baseParameters": {}
+        },
+        "linkedServiceName": {
+          "referenceName": "AzureDatabricksLinkedService",
+          "type": "LinkedServiceReference"
+        }
+      }
+    ],
+    "parameters": {},
+    "annotations": []
+  },
+  "type": "Microsoft.DataFactory/factories/pipelines"
+}
