@@ -14,3 +14,11 @@ data/*.parquet
 
 # Ignore JetBrains IDE settings
 .idea/
+
+# Keep full data out of GitHub
+data/raw/*.csv
+data/curated/*.csv
+
+# But allow small samples or README files
+!data/raw/README.md
+!data/curated/README.md
