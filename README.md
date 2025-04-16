@@ -39,27 +39,6 @@ Streamlit Dashboard (Interactive Visualization)
 
 ---
 
-## 📂 Project Structure
-```
-supply-chain-demo/
-├── data/
-│   ├── raw/                   # Simulated raw data (orders, inventory, shipments)
-│   └── curated/               # Cleaned output files from ETL (for local Streamlit use)
-├── notebooks/
-│   └── etl_pipeline.py        # PySpark ETL notebook
-├── streamlit_app/
-│   └── dashboard.py           # Streamlit dashboard (reads from Azure Blob or local CSVs)
-├── azure/
-│   ├── adf_pipeline.json      # Azure Data Factory pipeline export (via portal)
-│   └── adf_pipeline.md        # Description of ADF configuration
-├── .devops/
-│   └── azure-pipelines.yml    # CI/CD config placeholder (optional)
-├── architecture_diagram.png   # Updated architecture image (no Azure SQL)
-└── README.md
-```
-
----
-
 ## 🥚 Components
 
 ### 1. Ingestion
