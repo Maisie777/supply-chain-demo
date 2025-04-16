@@ -8,8 +8,13 @@ st.set_page_config(page_title="Supply Chain Dashboard", layout="wide")
 # --- Load Data ---
 @st.cache_data
 def load_data():
-    orders_shipments = pd.read_csv("data/curated/orders_shipments.csv", parse_dates=["order_date", "expected_delivery", "actual_delivery"])
-    inventory = pd.read_csv("data/curated/inventory.csv")
+    # ⬅️ Replace local file paths with public/SAS Azure Blob URLs
+    orders_url = "https://supplychain12.blob.core.windows.net/exports/orders_shipments/part-00000-abc.csv"
+    inventory_url = "https://supplychain12.blob.core.windows.net/exports/inventory/part-00000-def.csv"
+
+    orders_shipments = pd.read_csv(orders_url, parse_dates=["order_date", "expected_delivery", "actual_delivery"])
+    inventory = pd.read_csv(inventory_url)
+
     return orders_shipments, inventory
 
 orders_shipments, inventory = load_data()
@@ -59,4 +64,5 @@ with st.expander("🗃️ View Raw Data"):
     st.write("Inventory")
     st.dataframe(inventory.head(50))
 
+# Optional: save chart locally
 fig1.savefig("shipment_delay_histogram.png")
