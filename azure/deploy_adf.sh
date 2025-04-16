@@ -1,15 +1,18 @@
 #!/bin/bash
 
-# Variables
+# === CONFIGURE THESE VARIABLES ===
 RESOURCE_GROUP="your-resource-group"
 FACTORY_NAME="your-datafactory-name"
 PIPELINE_NAME="RunDatabricksETL"
+TEMPLATE_FILE="azure/adf_pipeline.json"
 
-# Deploy pipeline using exported ARM template
-az deployment group create \
-  --name ADFDeployment \
+# === DO NOT EDIT BELOW UNLESS NEEDED ===
+echo "Deploying pipeline: $PIPELINE_NAME to Data Factory: $FACTORY_NAME"
+
+az datafactory pipeline create \
   --resource-group $RESOURCE_GROUP \
-  --template-file azure/adf_pipeline.json \
-  --parameters factoryName=$FACTORY_NAME
+  --factory-name $FACTORY_NAME \
+  --name $PIPELINE_NAME \
+  --pipeline "$(cat $TEMPLATE_FILE)"
 
-echo "✅ Azure Data Factory pipeline deployed!"
+echo "✅ Deployment completed."
